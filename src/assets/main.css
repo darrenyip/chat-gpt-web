@@ -31,3 +31,9 @@ a,
     padding: 0 2rem;
   }
 }
+
+@media screen and (max-width: 390px) {
+  #app {
+    width: 100vw;
+  }
+}
