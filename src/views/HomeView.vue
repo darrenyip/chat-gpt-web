@@ -193,10 +193,4 @@ export default {
   flex-wrap: nowrap;
   flex-direction: row;
 }
-@media screen and (max-width: 600px) {
-  body {
-    background-color: yellow;
-    color: blue;
-  }
-}
 </style>
