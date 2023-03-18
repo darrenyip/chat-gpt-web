@@ -1,9 +1,10 @@
 import axios from 'axios'
+const apiKey = import.meta.env.VITE_API_KEY
 
 const instance = axios.create({
   baseURL: 'https://www.aiworksfine.com',
   headers: {
-    Authorization: 'Bearer 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',
+    Authorization: 'Bearer ' + apiKey,
     'Content-Type': 'application/json'
   }
 })
