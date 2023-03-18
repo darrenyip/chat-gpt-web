@@ -65,6 +65,7 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
+      let payloadQuestion = this.question
       let userChat = {
         isUser: true,
         content: this.question
@@ -79,7 +80,7 @@ export default {
           content: '思考中。。。'
         }
         this.chats.push(answer)
-        let answerText = await chatHttp.getAns(this.question)
+        let answerText = await chatHttp.getAns(payloadQuestion)
         answer = {
           isUser: false,
           content: answerText
