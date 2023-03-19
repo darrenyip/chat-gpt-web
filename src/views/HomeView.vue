@@ -52,10 +52,15 @@ export default {
     return {
       count: 1,
       question: '',
+      chatContext: [
+        { role: 'user', content: 'You are a helpful assistant.' },
+        { role: 'assistant', content: 'I am an assistant. How can I help?' }
+      ],
       chats: [],
       chatLoading: false
     }
   },
+  //[{ role: 'user', content: question }]
   methods: {
     resizeTextarea() {
       this.$refs.textarea.style.height = 'auto'
@@ -65,11 +70,22 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
-      let payloadQuestion = this.question
+      // only allow for 2 max context conversation for saving the token (my wallet hurts)
+      if (this.chatContext.length > 9) {
+        this.chatContext = [
+          { role: 'user', content: 'You are a helpful assistant.' },
+          { role: 'assistant', content: 'I am an assistant. How can I help?' }
+        ]
+      }
+
       let userChat = {
         isUser: true,
         content: this.question
       }
+      this.chatContext.push({
+        role: 'user',
+        content: this.question
+      })
       this.chats.push(userChat)
       this.question = ''
       this.resetTextareaHeight()
@@ -80,10 +96,17 @@ export default {
           content: '思考中。。。'
         }
         this.chats.push(answer)
-        let answerText = await chatHttp.getAns(payloadQuestion)
+
+        let gptResponse = await chatHttp.getAns(this.chatContext)
+
+        this.chatContext.push({
+          role: 'assistant',
+          content: gptResponse.choices[0].message.content
+        })
+
         answer = {
           isUser: false,
-          content: answerText
+          content: gptResponse.choices[0].message.content
         }
         this.chats.pop()
         this.chats.push(answer)
