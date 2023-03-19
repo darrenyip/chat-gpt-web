@@ -98,7 +98,6 @@ export default {
         this.chats.push(answer)
 
         let gptResponse = await chatHttp.getAns(this.chatContext)
-
         this.chatContext.push({
           role: 'assistant',
           content: gptResponse.choices[0].message.content
@@ -113,6 +112,11 @@ export default {
         this.chatLoading = true
       } catch (error) {
         alert(`获取GPT响应超时: ${error}`)
+        this.chats.pop()
+        this.chats.push({
+          isUser: false,
+          content: '请重新输入'
+        })
       } finally {
         this.$nextTick(() => {
           const button = this.$refs.inputButton

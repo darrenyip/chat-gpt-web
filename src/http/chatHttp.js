@@ -6,10 +6,15 @@ const getAns = (context) => {
     messages: context
   }
 
-  return new Promise((resolve) => {
-    instance.post(url, payload).then((res) => {
-      resolve(res.data)
-    })
+  return new Promise((resolve, reject) => {
+    instance
+      .post(url, payload)
+      .then((res) => {
+        resolve(res.data)
+      })
+      .catch((err) => {
+        reject(new Error(err))
+      })
   })
 }
 export default { getAns }
