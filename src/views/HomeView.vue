@@ -70,7 +70,7 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
-      // only allow for 2 max context conversation for saving the token (my wallet hurts)
+      // only allow for 3 max context conversation for saving the token (my wallet hurts)
       if (this.chatContext.length > 9) {
         this.chatContext = [
           { role: 'user', content: 'You are a helpful assistant.' },
@@ -111,7 +111,7 @@ export default {
         this.chats.push(answer)
         this.chatLoading = true
       } catch (error) {
-        alert(`获取GPT响应超时: ${error}`)
+        alert(`获取GPT失败: ${error}`)
         this.chats.pop()
         this.chats.push({
           isUser: false,
