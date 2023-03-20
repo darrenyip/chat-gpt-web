@@ -70,6 +70,8 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
+      if (this.question === '') return
+
       // only allow for 3 max context conversation for saving the token (my wallet hurts)
       if (this.chatContext.length > 9) {
         this.chatContext = [
@@ -86,6 +88,7 @@ export default {
         role: 'user',
         content: this.question
       })
+
       this.chats.push(userChat)
       this.question = ''
       this.resetTextareaHeight()
