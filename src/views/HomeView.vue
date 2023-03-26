@@ -47,6 +47,8 @@
 
 <script>
 import chatHttp from '../http/chatHttp'
+import Prism from 'prismjs'
+
 export default {
   data() {
     return {
@@ -101,15 +103,18 @@ export default {
         this.chats.push(answer)
 
         let gptResponse = await chatHttp.getAns(this.chatContext)
+        let resAns = gptResponse.choices[0].message.content
         this.chatContext.push({
           role: 'assistant',
-          content: gptResponse.choices[0].message.content
+          content: resAns
         })
 
         answer = {
           isUser: false,
-          content: gptResponse.choices[0].message.content
+          content: resAns
         }
+        // format code
+        this.formatCode(resAns)
         this.chats.pop()
         this.chats.push(answer)
         this.chatLoading = true
@@ -127,6 +132,31 @@ export default {
         })
         this.chatLoading = false
       }
+    },
+    formatCode(body) {
+      this.extractCodeBlocks(body)
+      // Using Python to write a code : take user input twice and add it up then show it to terminal
+      const bodyArr = body.split('```')
+      for (let i = 0; i < bodyArr.length; i++) {
+        if (i % 2 == 0) {
+          let code = bodyArr[i]
+          let lang = code.split(' ')[0]
+          console.log(lang)
+        }
+      }
+    },
+    extractCodeBlocks(text) {
+      const regex = /```[\s\S]*?```/g
+      let codeBlocks = []
+      let match
+
+      while ((match = regex.exec(text)) !== null) {
+        const codeBlock = match[0]
+        const code = codeBlock.slice(3, -3).trim() // Remove the triple backticks
+        codeBlocks.push(code)
+      }
+      console.log(codeBlocks)
+      return codeBlocks
     }
   }
 }
