@@ -26,6 +26,9 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
+      // testing stream api
+      this.onStreamQuestionFetch()
+
       if (this.question === '') return
 
       // only allow for 3 max context conversation for saving the token (my wallet hurts)
@@ -70,7 +73,7 @@ export default {
         // format code
         let codeInstance = new Formatter(resAns)
         let formattedCode = codeInstance.seperateText()
-        console.log(formattedCode)
+        // console.log(formattedCode)
         this.chats.pop()
         this.chats.push(answer)
         this.chatLoading = true
@@ -90,8 +93,8 @@ export default {
       }
     },
     async onStreamQuestionFetch() {
-      let gptResponse = await chatHttp.getStreamAns(this.chatContext)
-      console.log(gptResponse)
+      let gptResponse = await chatHttp.getStreamAns2(this.chatContext)
+      // console.log(gptResponse)
     }
   }
 }
@@ -123,7 +126,7 @@ export default {
         @input="resizeTextarea"
       ></textarea>
 
-      <button ref="inputButton" @click="onStreamQuestionFetch" @keyup.enter="onQuestionAsk">
+      <button ref="inputButton" @click="onQuestionAsk" @keyup.enter="onQuestionAsk">
         <svg
           stroke="currentColor"
           fill="none"

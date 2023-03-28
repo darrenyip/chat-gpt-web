@@ -41,9 +41,24 @@ const getStreamAns = async (context, textOnScreen = '') => {
   stream.on('data', (data) => {
     console.log(data)
   })
-  // stream.on('end', () => {
-  //   console.log('stream done')
-  // })
+  stream.on('end', () => {
+    console.log('stream done')
+  })
 }
 
-export default { getAns, getStreamAns }
+const getStreamAns2 = async (context) => {
+  const config = {
+    responseType: 'stream'
+  }
+  let payload = {
+    model: 'gpt-3.5-turbo',
+    messages: context,
+    stream: true
+  }
+  var es = new EventSource('https://www.aiworksfine.com/v1/chat/completions', payload, config)
+  es.onmessage = function (event) {
+    console.log('event Data: ', event.data)
+  }
+}
+
+export default { getAns, getStreamAns, getStreamAns2 }
