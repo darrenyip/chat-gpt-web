@@ -1,3 +1,4 @@
+import Prism from 'prismjs'
 class Formatter {
   textInParts = []
 

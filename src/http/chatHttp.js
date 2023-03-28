@@ -17,4 +17,33 @@ const getAns = (context) => {
       })
   })
 }
-export default { getAns }
+
+const getStreamAns = async (context, textOnScreen = '') => {
+  let url = '/v1/chat/completions'
+  const config = {
+    responseType: 'stream'
+  }
+  let payload = {
+    model: 'gpt-3.5-turbo',
+    messages: context,
+    stream: true
+  }
+
+  const response = await instance.post(url, payload, config)
+  const stream = response.data
+  console.log(stream)
+  // for (let key in stream) {
+  //   console.log(stream[key])
+  //   textOnScreen += stream[key]
+  // }
+  // console.log(textOnScreen)
+
+  stream.on('data', (data) => {
+    console.log(data)
+  })
+  // stream.on('end', () => {
+  //   console.log('stream done')
+  // })
+}
+
+export default { getAns, getStreamAns }

@@ -1,53 +1,7 @@
-<template>
-  <div class="main-chat">
-    <div class="hero" v-if="chats.length == 0">
-      <h3>Chat GPT</h3>
-      <p>解决你的所有疑问</p>
-    </div>
-    <div class="chat-window" v-else>
-      <div v-for="(item, index) in chats" :key="index">
-        <div :class="item.isUser ? 'chatrow userchat-reverse' : 'chatrow botchat-inorder'">
-          <div class="chatrow--icon user-icon" v-if="item.isUser">🤔</div>
-          <div class="chatrow--icon bot-icon" v-else>🤖</div>
-          <div :class="item.isUser ? 'user-content' : 'bot-content'">{{ item.content }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="question-inputSection">
-      <textarea
-        ref="textarea"
-        class="no-border"
-        rows="1"
-        v-model="question"
-        placeholder="Ask me any question"
-        @input="resizeTextarea"
-      ></textarea>
-
-      <button ref="inputButton" @click="onQuestionAsk" @keyup.enter="onQuestionAsk">
-        <svg
-          stroke="currentColor"
-          fill="none"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-4 w-4 mr-1"
-          height="1em"
-          width="1em"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
-    </div>
-  </div>
-</template>
-
 <script>
 import chatHttp from '../http/chatHttp'
-import Prism from 'prismjs'
+import Formatter from '../utils/codeFormatter'
+import parseJsonStream from '../http/handleStreamFetch'
 
 export default {
   data() {
@@ -114,7 +68,9 @@ export default {
           content: resAns
         }
         // format code
-        this.formatCode(resAns)
+        let codeInstance = new Formatter(resAns)
+        let formattedCode = codeInstance.seperateText()
+        console.log(formattedCode)
         this.chats.pop()
         this.chats.push(answer)
         this.chatLoading = true
@@ -133,34 +89,60 @@ export default {
         this.chatLoading = false
       }
     },
-    formatCode(body) {
-      this.extractCodeBlocks(body)
-      // Using Python to write a code : take user input twice and add it up then show it to terminal
-      const bodyArr = body.split('```')
-      for (let i = 0; i < bodyArr.length; i++) {
-        if (i % 2 == 0) {
-          let code = bodyArr[i]
-          let lang = code.split(' ')[0]
-          console.log(lang)
-        }
-      }
-    },
-    extractCodeBlocks(text) {
-      const regex = /```[\s\S]*?```/g
-      let codeBlocks = []
-      let match
-
-      while ((match = regex.exec(text)) !== null) {
-        const codeBlock = match[0]
-        const code = codeBlock.slice(3, -3).trim() // Remove the triple backticks
-        codeBlocks.push(code)
-      }
-      console.log(codeBlocks)
-      return codeBlocks
+    async onStreamQuestionFetch() {
+      let gptResponse = await chatHttp.getStreamAns(this.chatContext)
+      console.log(gptResponse)
     }
   }
 }
 </script>
+
+<template>
+  <div class="main-chat">
+    <div class="hero" v-if="chats.length == 0">
+      <h3>Chat GPT</h3>
+      <p>解决你的所有疑问</p>
+    </div>
+    <div class="chat-window" v-else>
+      <div v-for="(item, index) in chats" :key="index">
+        <div :class="item.isUser ? 'chatrow userchat-reverse' : 'chatrow botchat-inorder'">
+          <div class="chatrow--icon user-icon" v-if="item.isUser">🤔</div>
+          <div class="chatrow--icon bot-icon" v-else>🤖</div>
+          <div :class="item.isUser ? 'user-content' : 'bot-content'">{{ item.content }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="question-inputSection">
+      <textarea
+        ref="textarea"
+        class="no-border"
+        rows="1"
+        v-model="question"
+        placeholder="Ask me any question"
+        @input="resizeTextarea"
+      ></textarea>
+
+      <button ref="inputButton" @click="onStreamQuestionFetch" @keyup.enter="onQuestionAsk">
+        <svg
+          stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4 mr-1"
+          height="1em"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .main-chat {
