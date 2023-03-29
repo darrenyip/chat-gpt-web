@@ -1,7 +1,6 @@
 <script>
 import chatHttp from '../http/chatHttp'
-import Formatter from '../utils/codeFormatter'
-import parseJsonStream from '../http/handleStreamFetch'
+const apiKey = import.meta.env.VITE_API_KEY
 
 export default {
   data() {
@@ -26,18 +25,16 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onQuestionAsk() {
-      // testing stream api
-      this.onStreamQuestionFetch()
-
+      // this.getStreamAns(this.chatContext)
       if (this.question === '') return
 
       // only allow for 3 max context conversation for saving the token (my wallet hurts)
-      if (this.chatContext.length > 9) {
-        this.chatContext = [
-          { role: 'user', content: 'You are a helpful assistant.' },
-          { role: 'assistant', content: 'I am an assistant. How can I help?' }
-        ]
-      }
+      // if (this.chatContext.length > 9) {
+      //   this.chatContext = [
+      //     { role: 'user', content: 'You are a helpful assistant.' },
+      //     { role: 'assistant', content: 'I am an assistant. How can I help?' }
+      //   ]
+      // }
 
       let userChat = {
         isUser: true,
@@ -70,10 +67,6 @@ export default {
           isUser: false,
           content: resAns
         }
-        // format code
-        let codeInstance = new Formatter(resAns)
-        let formattedCode = codeInstance.seperateText()
-        // console.log(formattedCode)
         this.chats.pop()
         this.chats.push(answer)
         this.chatLoading = true
@@ -92,9 +85,52 @@ export default {
         this.chatLoading = false
       }
     },
-    async onStreamQuestionFetch() {
-      let gptResponse = await chatHttp.getStreamAns2(this.chatContext)
-      // console.log(gptResponse)
+    async getStreamAns(context) {
+      let payload = {
+        model: 'gpt-3.5-turbo',
+        messages: context,
+        stream: true
+      }
+      const response = await fetch('https://www.aiworksfine.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (response.ok) {
+        const reader = response.body.getReader()
+        const textDecoder = new TextDecoder()
+        let gptRes = ''
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) {
+            break
+          }
+          const strDataArr = textDecoder.decode(value).split('\n')
+          gptRes += this.constructJSONFromArr(strDataArr)
+        }
+        console.log(gptRes)
+      } else {
+        console.error('Error occurred:', response.statusText)
+      }
+    },
+    constructJSONFromArr(arr) {
+      let tempStr = ''
+      console.log(arr)
+      for (const [index, item] of arr.entries()) {
+        if (item === '' || item.includes('[DONE]')) continue
+        let splitStr = item.slice(6)
+        let resJSON = JSON.parse(splitStr)
+        console.log(index, resJSON)
+        if (resJSON.choices[0].delta.content) {
+          console.log(resJSON.choices[0].delta.content)
+          tempStr += resJSON.choices[0].delta.content
+        }
+      }
+      return tempStr
     }
   }
 }
@@ -105,6 +141,7 @@ export default {
     <div class="hero" v-if="chats.length == 0">
       <h3>Chat GPT</h3>
       <p>解决你的所有疑问</p>
+      <p style="color: #555555">现已接入GPT 4</p>
     </div>
     <div class="chat-window" v-else>
       <div v-for="(item, index) in chats" :key="index">

@@ -1,10 +1,14 @@
 import instance from '.'
+const model_three = 'gpt-3.5-turbo'
+const model_four = 'gpt-4-0314'
+const apiKey = import.meta.env.VITE_API_KEY
 const getAns = (context) => {
   let url = '/v1/chat/completions'
   let payload = {
-    model: 'gpt-3.5-turbo',
+    model: model_four,
     messages: context
   }
+  console.log('current : ', payload.model)
 
   return new Promise((resolve, reject) => {
     instance
@@ -17,48 +21,11 @@ const getAns = (context) => {
       })
   })
 }
-
-const getStreamAns = async (context, textOnScreen = '') => {
-  let url = '/v1/chat/completions'
-  const config = {
-    responseType: 'stream'
-  }
-  let payload = {
-    model: 'gpt-3.5-turbo',
-    messages: context,
-    stream: true
-  }
-
-  const response = await instance.post(url, payload, config)
-  const stream = response.data
-  console.log(stream)
-  // for (let key in stream) {
-  //   console.log(stream[key])
-  //   textOnScreen += stream[key]
-  // }
-  // console.log(textOnScreen)
-
-  stream.on('data', (data) => {
-    console.log(data)
-  })
-  stream.on('end', () => {
-    console.log('stream done')
-  })
+const getModels = async () => {
+  let url = '/v1/models'
+  let response = await instance.get(url)
+  console.log(response)
 }
+// getModels()
 
-const getStreamAns2 = async (context) => {
-  const config = {
-    responseType: 'stream'
-  }
-  let payload = {
-    model: 'gpt-3.5-turbo',
-    messages: context,
-    stream: true
-  }
-  var es = new EventSource('https://www.aiworksfine.com/v1/chat/completions', payload, config)
-  es.onmessage = function (event) {
-    console.log('event Data: ', event.data)
-  }
-}
-
-export default { getAns, getStreamAns, getStreamAns2 }
+export default { getAns }
