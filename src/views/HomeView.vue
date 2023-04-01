@@ -1,5 +1,4 @@
 <script>
-import chatHttp from '../http/chatHttp'
 const apiKey = import.meta.env.VITE_API_KEY
 
 export default {
@@ -24,18 +23,8 @@ export default {
     resetTextareaHeight() {
       this.$refs.textarea.style.height = '20px'
     },
-    async onQuestionAsk() {
-      // this.getStreamAns(this.chatContext)
-      if (this.question === '') return
-
-      // only allow for 3 max context conversation for saving the token (my wallet hurts)
-      // if (this.chatContext.length > 9) {
-      //   this.chatContext = [
-      //     { role: 'user', content: 'You are a helpful assistant.' },
-      //     { role: 'assistant', content: 'I am an assistant. How can I help?' }
-      //   ]
-      // }
-
+    async onGetStreamAns() {
+      // push user question to screen
       let userChat = {
         isUser: true,
         content: this.question
@@ -44,51 +33,17 @@ export default {
         role: 'user',
         content: this.question
       })
-
       this.chats.push(userChat)
       this.question = ''
-      this.resetTextareaHeight()
-      this.chatLoading = true
-      try {
-        let answer = {
-          isUser: false,
-          content: '思考中。。。'
-        }
-        this.chats.push(answer)
-
-        let gptResponse = await chatHttp.getAns(this.chatContext)
-        let resAns = gptResponse.choices[0].message.content
-        this.chatContext.push({
-          role: 'assistant',
-          content: resAns
-        })
-
-        answer = {
-          isUser: false,
-          content: resAns
-        }
-        this.chats.pop()
-        this.chats.push(answer)
-        this.chatLoading = true
-      } catch (error) {
-        alert(`获取GPT失败: ${error}`)
-        this.chats.pop()
-        this.chats.push({
-          isUser: false,
-          content: '请重新输入'
-        })
-      } finally {
-        this.$nextTick(() => {
-          const button = this.$refs.inputButton
-          button.scrollIntoView()
-        })
-        this.chatLoading = false
+      let gptChat = {
+        isUser: false,
+        content: '思考中...'
       }
-    },
-    async getStreamAns(context) {
+      this.chats.push(gptChat)
+
       let payload = {
         model: 'gpt-3.5-turbo',
-        messages: context,
+        messages: this.chatContext,
         stream: true
       }
       const response = await fetch('https://www.aiworksfine.com/v1/chat/completions', {
@@ -110,23 +65,23 @@ export default {
             break
           }
           const strDataArr = textDecoder.decode(value).split('\n')
+          console.log(strDataArr)
           gptRes += this.constructJSONFromArr(strDataArr)
+          console.log(gptRes)
+          this.chats[this.chats.length - 1].content = gptRes
         }
-        console.log(gptRes)
       } else {
+        this.chats[this.chats.length - 1].content = '请重新输入'
         console.error('Error occurred:', response.statusText)
       }
     },
     constructJSONFromArr(arr) {
       let tempStr = ''
-      console.log(arr)
       for (const [index, item] of arr.entries()) {
         if (item === '' || item.includes('[DONE]')) continue
         let splitStr = item.slice(6)
         let resJSON = JSON.parse(splitStr)
-        console.log(index, resJSON)
         if (resJSON.choices[0].delta.content) {
-          console.log(resJSON.choices[0].delta.content)
           tempStr += resJSON.choices[0].delta.content
         }
       }
@@ -163,7 +118,7 @@ export default {
         @input="resizeTextarea"
       ></textarea>
 
-      <button ref="inputButton" @click="onQuestionAsk" @keyup.enter="onQuestionAsk">
+      <button ref="inputButton" @click="onGetStreamAns">
         <svg
           stroke="currentColor"
           fill="none"
