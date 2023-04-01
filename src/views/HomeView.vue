@@ -1,6 +1,9 @@
 <script>
 const apiKey = import.meta.env.VITE_API_KEY
-
+const version = {
+  'GPT-3.5': 'gpt-3.5-turbo',
+  'GPT-4': 'gpt-4'
+}
 export default {
   data() {
     return {
@@ -11,7 +14,8 @@ export default {
         { role: 'assistant', content: 'I am an assistant. How can I help?' }
       ],
       chats: [],
-      chatLoading: false
+      chatLoading: false,
+      gptVersion: 'GPT-3.5'
     }
   },
   //[{ role: 'user', content: question }]
@@ -42,7 +46,7 @@ export default {
       this.chats.push(gptChat)
 
       let payload = {
-        model: 'gpt-3.5-turbo',
+        model: version[this.gptVersion],
         messages: this.chatContext,
         stream: true
       }
@@ -96,7 +100,10 @@ export default {
     <div class="hero" v-if="chats.length == 0">
       <h3>Chat GPT</h3>
       <p>解决你的所有疑问</p>
-      <p style="color: #555555">现已接入GPT 4</p>
+      <p style="color: #555555" class="mb-1">现已接入GPT 4</p>
+      <div class="gpt-selector">
+        <v-select v-model="gptVersion" label="GPT 版本" :items="['GPT-3.5', 'GPT-4']"></v-select>
+      </div>
     </div>
     <div class="chat-window" v-else>
       <div v-for="(item, index) in chats" :key="index">
@@ -230,5 +237,11 @@ export default {
   justify-content: space-between;
   flex-wrap: nowrap;
   flex-direction: row;
+}
+.gpt-selector {
+  width: 200px;
+}
+.mb-1 {
+  margin-bottom: 1rem;
 }
 </style>
