@@ -28,6 +28,11 @@ export default {
       this.$refs.textarea.style.height = '20px'
     },
     async onGetStreamAns() {
+      if (this.question.length > 500) {
+        alert('Well. 穷了 问题只有最多允许500个字.')
+        this.question = ''
+        return
+      }
       // push user question to screen
       let userChat = {
         isUser: true,
@@ -50,6 +55,7 @@ export default {
         messages: this.chatContext,
         stream: true
       }
+
       const response = await fetch('https://www.aiworksfine.com/v1/chat/completions', {
         method: 'POST',
         headers: {
