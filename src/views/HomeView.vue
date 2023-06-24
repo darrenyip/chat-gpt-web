@@ -1,8 +1,8 @@
 <script>
 const apiKey = import.meta.env.VITE_API_KEY
 const version = {
-  'GPT-3.5': 'gpt-3.5-turbo',
-  'GPT-4': 'gpt-4'
+  'GPT-3.5': 'gpt-3.5-turbo-16k-0613',
+  'GPT-4': 'gpt-4-0613'
 }
 export default {
   data() {
